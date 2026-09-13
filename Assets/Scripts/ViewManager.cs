@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class ViewManager : MonoBehaviour
 {
+    [SerializeField] private Opening _opening;
     [SerializeField] private GameObject[] _mainMenu;
     [SerializeField] private MainMenuController _mainMenuController;
     [SerializeField] private GameObject _game;
@@ -30,23 +31,39 @@ public class ViewManager : MonoBehaviour
         SetTransitionAlpha(0.0f);
     }
 
-    public void ShowMainMenu()
+    public void ShowOpening()
     {
-        SetMainMenuActive(true);
+        SetMainMenuActive(false);
         _game.SetActive(false);
         _dimBackGround.SetActive(false);
         _pausePopup.gameObject.SetActive(false);
         _gameOverPopup.gameObject.SetActive(false);
+
+        _opening.gameObject.SetActive(true);
+        _opening.StartOpening();
+    }
+
+    public void ShowMainMenu()
+    {
+        _opening.gameObject.SetActive(false);
+        _game.SetActive(false);
+        _dimBackGround.SetActive(false);
+        _pausePopup.gameObject.SetActive(false);
+        _gameOverPopup.gameObject.SetActive(false);
+
+        SetMainMenuActive(true);
         _mainMenuController.Init();
     }
 
     public void ShowGame()
     {
+        _opening.gameObject.SetActive(false);
         SetMainMenuActive(false);
-        _game.SetActive(true);
         _dimBackGround.SetActive(false);
         _pausePopup.gameObject.SetActive(false);
         _gameOverPopup.gameObject.SetActive(false);
+
+        _game.SetActive(true);
     }
 
     public void ShowPause()

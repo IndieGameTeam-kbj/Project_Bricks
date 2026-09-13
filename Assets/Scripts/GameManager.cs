@@ -2,6 +2,7 @@ using UnityEngine;
 
 public enum GameState
 {
+    Opening,
     MainMenu,
     Playing,
     Pause,
@@ -16,11 +17,8 @@ public class GameManager : MonoBehaviour
     private bool _hasCurrentGame;
     private bool _isTransitioning;
 
-    public bool CanContinue =>
-        _hasCurrentGame || SaveManager.Instance.HasSaveData();
-
-    public bool CanControlBoard =>
-        _state == GameState.Playing && !_isTransitioning;
+    public bool CanContinue => _hasCurrentGame || SaveManager.Instance.HasSaveData();
+    public bool CanControlBoard => _state == GameState.Playing && !_isTransitioning;
 
     public static GameManager Instance { get; private set; }
     private void Awake()
@@ -43,7 +41,7 @@ public class GameManager : MonoBehaviour
     {
         //PlayerPrefs.DeleteAll();
         //PlayerPrefs.Save();
-        ChangeState(GameState.MainMenu);
+        ChangeState(GameState.Opening);
     }
 
     public void StartNewGame()
@@ -120,7 +118,26 @@ public class GameManager : MonoBehaviour
 
     public void Home()
     {
-        ChangeState(GameState.MainMenu);
+        if (_isTransitioning) return;
+
+        if (_state == GameState.Opening)
+        {
+            ChangeState(GameState.MainMenu);
+            return;
+        }
+
+        _isTransitioning = true;
+        SoundManager.Instance.PlaySceneTransition();
+        ViewManager.Instance.Transition(
+            () =>
+            {
+                ChangeState(GameState.MainMenu);
+            },
+            () =>
+            {
+                _isTransitioning = false;
+            }
+        );
     }
 
     public void Restart()
@@ -145,6 +162,11 @@ public class GameManager : MonoBehaviour
 
         switch (_state)
         {
+            case GameState.Opening:
+                Time.timeScale = 1.0f;
+                ViewManager.Instance.ShowOpening();
+                break;
+
             case GameState.MainMenu:
                 Time.timeScale = 1.0f;
                 ViewManager.Instance.ShowMainMenu();
