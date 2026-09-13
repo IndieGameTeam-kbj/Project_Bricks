@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public class TiltGravityController : MonoBehaviour
 {
     [SerializeField] private float gravityStrength = 15f;
-    //[SerializeField] private float sensitivity = 2.5f;
+    [SerializeField] private float sensitivity = 2.5f;
     [SerializeField] private float deadZone = 0.05f;
 
     private Vector2 tiltInput;
