@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 public class Board : MonoBehaviour
 {
@@ -215,22 +214,20 @@ public class Board : MonoBehaviour
         List<List<BoardSlot>> destructionOrder = _destructionOrder;
         _destructionOrder = new List<List<BoardSlot>>();
 
-        // 파괴 대상이 중복돼도 한 번만 계산
-        HashSet<BrickController> targets = new HashSet<BrickController>();
+        int targetCount = 0;
 
         foreach (List<BoardSlot> level in destructionOrder)
         {
             foreach (BoardSlot slot in level)
             {
-                if (slot.PlacedBrick != null &&
-                    slot.PlacedBrick.State != BrickState.Destroying)
+                if (slot.PlacedBrick != null && slot.PlacedBrick.State != BrickState.Destroying)
                 {
-                    targets.Add(slot.PlacedBrick);
+                    targetCount++;
                 }
             }
         }
 
-        LineDestroyed?.Invoke(targets.Count);
+        LineDestroyed?.Invoke(targetCount);
         StartCoroutine(DestroyLine(destructionOrder));
         
         return true;

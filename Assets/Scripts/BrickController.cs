@@ -19,16 +19,17 @@ public enum BrickType
 
 public enum BrickKind
 {
-    Horizontal,
-    Vertical,
-    DiagonalUpward,
-    DiagonalDownward,
-    Cross,
-    DiagonalCross,
-    Horizontal_DiagonalUpward,
-    Horizontal_DiagonalDownward,
-    Vertical_DiagonalUpward,
-    Vertical_DiagonalDownward,
+    H,
+    V,
+    DU,
+    DD,
+
+    HV,
+    HDU,
+    HDD,
+    VDU,
+    VDD,
+    DUDD,
 }
 
 public class BrickController : MonoBehaviour
@@ -121,10 +122,7 @@ public class BrickController : MonoBehaviour
     {
         transform.position = position;
         transform.localScale = _originalScale;
-
-        _state = placed
-            ? BrickState.Placed
-            : BrickState.Prepared;
+        _state = placed ? BrickState.Placed : BrickState.Prepared;
     }
 
 }

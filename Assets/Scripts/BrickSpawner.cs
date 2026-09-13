@@ -37,7 +37,25 @@ public class BrickSpawner : MonoBehaviour
 
     private BrickController SpawnBrick(int index)
     {
-        int randomIndex = Random.Range(0, _brickPrefabs.Length); 
+        float flag1 = Random.Range(0.00f, 1.00f);
+        float flag2 = Random.Range(0.00f, 1.00f);
+
+        int randomIndex = -1;
+        if (flag1 <= 0.75f)
+        {
+            if (flag2 <= 0.75f)
+                randomIndex = Random.Range(0, 2);
+            else 
+                randomIndex = Random.Range(2, 4);
+        }
+        else
+        {
+            if (flag2 <= 0.75f)
+                randomIndex = 4;
+            else
+                randomIndex = Random.Range(5, _brickPrefabs.Length);
+        }
+
         GameObject spawnedObject = Instantiate(_brickPrefabs[randomIndex], _brickSpawnPoint.position, Quaternion.identity, _brickParent);
         BrickController brick = spawnedObject.GetComponent<BrickController>();
         brick.Init(_brickPreparedPoints[index].position);
@@ -69,25 +87,15 @@ public class BrickSpawner : MonoBehaviour
             }
         }
 
-        throw new System.InvalidOperationException(
-            $"타입에 맞는 프리팹이 없습니다: {kind}"
-        );
+        throw new System.InvalidOperationException($"타입에 맞는 프리팹이 없습니다: {kind}");
     }
 
     private BrickController Create(BrickKind kind, Vector3 position, bool placed)
     {
-        GameObject spawnedObject = Instantiate(
-            GetPrefabByKind(kind),
-            position,
-            Quaternion.identity,
-            _brickParent
-        );
-
+        GameObject spawnedObject = Instantiate(GetPrefabByKind(kind), position, Quaternion.identity, _brickParent);
         BrickController brick = spawnedObject.GetComponent<BrickController>();
-
         brick.Init(position);
         brick.RestoreAt(position, placed);
-
         return brick;
     }
 
@@ -96,9 +104,7 @@ public class BrickSpawner : MonoBehaviour
         foreach (BrickSaveData saved in data)
         {
             BoardSlot slot = slots[saved.row, saved.column];
-
             BrickController brick = Create(saved.kind, slot.transform.position, true);
-
             slot.Place(brick);
         }
     }
@@ -116,4 +122,5 @@ public class BrickSpawner : MonoBehaviour
 
         return bricks;
     }
+
 }

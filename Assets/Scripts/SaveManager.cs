@@ -8,7 +8,6 @@ public class SaveManager : MonoBehaviour
     private const string BestScoreKey = "BestScore";
 
     public static SaveManager Instance { get; private set; }
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -16,7 +15,6 @@ public class SaveManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
         Instance = this;
     }
 
@@ -122,4 +120,5 @@ public class SaveManager : MonoBehaviour
         // 기존 저장 함수 호출
         SaveGame(data);
     }
+
 }

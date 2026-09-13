@@ -41,6 +41,8 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        //PlayerPrefs.DeleteAll();
+        //PlayerPrefs.Save();
         ChangeState(GameState.MainMenu);
     }
 

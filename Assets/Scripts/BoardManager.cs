@@ -4,12 +4,12 @@ public class BoardManager : MonoBehaviour
 {
     [SerializeField] private BrickSpawner _brickSpawner;
     [SerializeField] private Board _board;
+    [SerializeField] private GameObject _brickPreview;
 
     private BrickController[] _preparedBricks;
     private Camera _mainCamera;
     private BrickController _draggingBrick;
-    private float _dragScreenYOffset = 100.0f;
-
+    private float _dragScreenYOffset = 150.0f;
     private bool _savePending = false;
 
     public static BoardManager Instance { get; private set; }
@@ -30,6 +30,7 @@ public class BoardManager : MonoBehaviour
         _savePending = false;
         _brickSpawner.Reset();
         _board.Reset();
+        _brickPreview.SetActive(false);
 
         if (_preparedBricks == null) return;
 
@@ -51,7 +52,6 @@ public class BoardManager : MonoBehaviour
     public void StartGame()
     {
         _preparedBricks = _brickSpawner.SpawnBricks();
-
         RequestSave();
     }
 
@@ -66,12 +66,14 @@ public class BoardManager : MonoBehaviour
         {
             Vector2 dragWorldPosition = GetDragWorldPosition();
             _draggingBrick.Drag(dragWorldPosition);
+            UpdateBrickPreview(dragWorldPosition);
         }
 
         if (_draggingBrick != null && InputManager.Instance.IsPointerReleased)
         {
             TryPlaceBrick();
             _draggingBrick = null;
+            _brickPreview.SetActive(false);
         }
     }
 
@@ -188,9 +190,20 @@ public class BoardManager : MonoBehaviour
     public void RestoreGame(GameSaveData data)
     {
         Reset();
-
         _brickSpawner.RestoreBoard( data.boardBricks, _board.Slots );
-
         _preparedBricks = _brickSpawner.RestorePrepared( data.preparedKinds );
     }
+
+    private void UpdateBrickPreview(Vector2 position)
+    {
+        if (!_board.TryGetPlacementSlot(position, out BoardSlot slot))
+        {
+            _brickPreview.SetActive(false);
+            return;
+        }
+
+        _brickPreview.transform.position = slot.transform.position;
+        _brickPreview.SetActive(true);
+    }
+
 }
