@@ -22,6 +22,10 @@ public class SoundManager : MonoBehaviour
     [Header("Scene Transition")]
     [SerializeField] private AudioClip _sceneTransitionSound;
 
+    [Header("Opening")]
+    [SerializeField] private AudioClip _openingSound;
+    [SerializeField] private AudioClip _openingEndSound;
+
     [Header("Settings")]
     [SerializeField] private float _minPitch = 0.95f;
     [SerializeField] private float _maxPitch = 1.05f;
@@ -91,6 +95,16 @@ public class SoundManager : MonoBehaviour
     public void PlaySceneTransition()
     {
         Play(_sceneTransitionSound);
+    }
+
+    public void PlayOpeningSound()
+    {
+        Play(_openingSound);
+    }
+
+    public void PlayOpeningEndSound()
+    {
+        Play(_openingEndSound);
     }
 
     private void PlayRandom(AudioClip[] clips)

@@ -22,6 +22,8 @@ public class Opening : MonoBehaviour
         }
         yield return new WaitForSeconds(_logoAnimationDelay);
 
+        SoundManager.Instance.PlayOpeningSound();
+
         for (int i = 0; i < _logoAlphabets.Length; i++)
         {
             _logoAlphabets[i].gameObject.SetActive(true);
@@ -37,6 +39,7 @@ public class Opening : MonoBehaviour
         yield return new WaitForSeconds(_logoAnimationDelay * 10);
         _isOpening = false;
         GameManager.Instance.Home();
+        SoundManager.Instance.PlayOpeningEndSound();
     }
 
     private void Update()
