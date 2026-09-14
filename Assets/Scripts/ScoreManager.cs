@@ -38,6 +38,11 @@ public class ScoreManager : MonoBehaviour
         Instance = this;
     }
 
+    private void Start()
+    {
+        _bestScore = SaveManager.Instance.LoadBestScore();
+    }
+
     public void Reset()
     {
         _score = 0;
@@ -52,7 +57,10 @@ public class ScoreManager : MonoBehaviour
     public void RestoreScore(GameSaveData data)
     {
         _score = data.score;
+        _bestScore = SaveManager.Instance.LoadBestScore();
+
         RefreshScore();
+
         _isNewBestScore = data.isNewBestScore;
         _newBestIcon.SetActive(_isNewBestScore);
         _comboText.DOKill();
