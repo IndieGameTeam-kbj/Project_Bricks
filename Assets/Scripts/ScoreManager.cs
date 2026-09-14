@@ -6,6 +6,7 @@ public class ScoreManager : MonoBehaviour
 {
     [SerializeField] Board _board;
     [SerializeField] private TMP_Text _scoreText;
+    [SerializeField] private GameObject _newBestIcon;
 
     private int _score = 0;
     private int _bestScore = 0;
@@ -36,6 +37,7 @@ public class ScoreManager : MonoBehaviour
         _score = data.score;
         _isNewBestScore = data.isNewBestScore;
 
+        _newBestIcon.SetActive(_isNewBestScore);
         RefreshScore();
     }
 
@@ -53,6 +55,8 @@ public class ScoreManager : MonoBehaviour
 
         _prevBestScore = _bestScore;
         _isNewBestScore = false;
+
+        _newBestIcon.SetActive(false);
     }
 
     private void AddScore(int amount)
@@ -66,6 +70,7 @@ public class ScoreManager : MonoBehaviour
             {
                 SoundManager.Instance.PlayBestScores();
                 _isNewBestScore = true;
+                _newBestIcon.SetActive(true);
             }
             SaveManager.Instance.SaveBestScore(_score);
             _bestScore = _score;
