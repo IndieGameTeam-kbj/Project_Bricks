@@ -16,7 +16,7 @@ public class GameOverPopup : MonoBehaviour
     public void Init()
     {
         _score = ScoreManager.Instance.Score;
-        _bestScore = ScoreManager.Instance.PrevBestScore;
+        _bestScore = ScoreManager.Instance.BestScore;
 
         _scoreText.text = "0";
         _bestScoreText.text = _bestScore.ToString("N0");
