@@ -12,6 +12,7 @@ public class BrickSpawner : MonoBehaviour
     public Transform[] PreparedPoints => _brickPreparedPoints;
     private Coroutine _spawnCoroutine;
     private float _spawnInterval = 0.2f;
+    private float _spawnWeight = 0.0f;
 
     public void Reset()
     {
@@ -20,6 +21,7 @@ public class BrickSpawner : MonoBehaviour
             StopCoroutine(_spawnCoroutine);
             _spawnCoroutine = null;
         }
+        _spawnWeight = 0.0f;
     }
 
     public BrickController[] SpawnBricks()
@@ -37,23 +39,43 @@ public class BrickSpawner : MonoBehaviour
 
     private BrickController SpawnBrick(int index)
     {
-        float flag1 = Random.Range(0.00f, 1.00f);
-        float flag2 = Random.Range(0.00f, 1.00f);
+        // 65, 30, 3, 1, 1
+        float randomValue = Random.Range(0.0f, 100.0f);
 
-        int randomIndex = -1;
-        if (flag1 <= 0.75f)
+        int randomIndex;
+        if (randomValue < 95.0f - _spawnWeight)
         {
-            if (flag2 <= 0.75f)
+            float oneLineValue = Random.Range(0.0f, 100.0f);
+
+            if (oneLineValue < 65.0f)
+            {
                 randomIndex = Random.Range(0, 2);
-            else 
+            }
+            else
+            {
                 randomIndex = Random.Range(2, 4);
+            }
+
+            _spawnWeight += 1.0f;
         }
         else
         {
-            if (flag2 <= 0.75f)
+            float twoLineValue = Random.Range(0.0f, 100.0f);
+
+            if (twoLineValue < 60.0f)
+            {
                 randomIndex = 4;
+            }
+            else if (twoLineValue < 80.0f)
+            {
+                randomIndex = Random.Range(5, 9);
+            }
             else
-                randomIndex = Random.Range(5, _brickPrefabs.Length);
+            {
+                randomIndex = 9;
+            }
+
+            _spawnWeight = 0.0f;
         }
 
         GameObject spawnedObject = Instantiate(_brickPrefabs[randomIndex], _brickSpawnPoint.position, Quaternion.identity, _brickParent);
