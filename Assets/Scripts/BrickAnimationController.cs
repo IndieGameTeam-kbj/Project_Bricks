@@ -65,7 +65,8 @@ public class BrickAnimationController : MonoBehaviour
         _destroySequence.Append(transform.DOScale(_originalScale * _destroyScale, _destroyDuration * 0.3f).SetEase(Ease.OutQuad));
         _destroySequence.Append(transform.DOScale(Vector3.zero, _destroyDuration * 0.7f).SetEase(Ease.InBack));
         _destroySequence.Join(
-            transform.DORotate(new Vector3(0.0f, 0.0f, UnityEngine.Random.Range(-8.0f, 8.0f)), _destroyDuration).SetEase(Ease.InQuad));
+            transform.DORotate(new Vector3(0.0f, 0.0f, UnityEngine.Random.Range(-8.0f, 8.0f)), _destroyDuration).SetEase(Ease.InQuad)
+            );
         _destroySequence.OnComplete(() =>
         {
             onComplete?.Invoke();

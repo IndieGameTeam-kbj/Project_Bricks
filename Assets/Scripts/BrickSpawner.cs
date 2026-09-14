@@ -39,7 +39,9 @@ public class BrickSpawner : MonoBehaviour
 
     private BrickController SpawnBrick(int index)
     {
-        // 65, 30, 3, 1, 1
+        // 95 / 5
+        // 70 / 30
+        // 70 / 20 / 10
         float randomValue = Random.Range(0.0f, 100.0f);
 
         int randomIndex;
@@ -47,7 +49,7 @@ public class BrickSpawner : MonoBehaviour
         {
             float oneLineValue = Random.Range(0.0f, 100.0f);
 
-            if (oneLineValue < 65.0f)
+            if (oneLineValue < 70.0f)
             {
                 randomIndex = Random.Range(0, 2);
             }
@@ -62,11 +64,11 @@ public class BrickSpawner : MonoBehaviour
         {
             float twoLineValue = Random.Range(0.0f, 100.0f);
 
-            if (twoLineValue < 60.0f)
+            if (twoLineValue < 70.0f)
             {
                 randomIndex = 4;
             }
-            else if (twoLineValue < 80.0f)
+            else if (twoLineValue < 90.0f)
             {
                 randomIndex = Random.Range(5, 9);
             }
