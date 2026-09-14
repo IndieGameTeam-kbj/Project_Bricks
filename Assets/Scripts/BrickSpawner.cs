@@ -58,7 +58,14 @@ public class BrickSpawner : MonoBehaviour
                 randomIndex = Random.Range(2, 4);
             }
 
-            _spawnWeight += 1.0f;
+            if (_spawnWeight < 0.0f)
+            {
+                _spawnWeight = 0.0f;
+            }
+            else
+            {
+                _spawnWeight += 1.0f;
+            }
         }
         else
         {
@@ -77,7 +84,14 @@ public class BrickSpawner : MonoBehaviour
                 randomIndex = 9;
             }
 
-            _spawnWeight = 0.0f;
+            if(_spawnWeight > 0.0f)
+            {
+                _spawnWeight = 0.0f;
+            }
+            else
+            {
+                _spawnWeight -= 1.0f;
+            }
         }
 
         GameObject spawnedObject = Instantiate(_brickPrefabs[randomIndex], _brickSpawnPoint.position, Quaternion.identity, _brickParent);

@@ -32,6 +32,17 @@ public class ScoreManager : MonoBehaviour
         Instance = this;
     }
 
+    public void Reset()
+    {
+        _score = 0;
+        _scoreText.text = _score.ToString();
+
+        _prevBestScore = _bestScore;
+        _isNewBestScore = false;
+
+        _newBestIcon.SetActive(false);
+    }
+
     public void RestoreScore(GameSaveData data)
     {
         _score = data.score;
@@ -48,20 +59,19 @@ public class ScoreManager : MonoBehaviour
         _scoreText.text = _score.ToString();
     }
 
-    public void Reset()
-    {
-        _score = 0;
-        _scoreText.text = _score.ToString();
-
-        _prevBestScore = _bestScore;
-        _isNewBestScore = false;
-
-        _newBestIcon.SetActive(false);
-    }
-
     private void AddScore(int amount)
     {
-        _score += amount;
+        float combo = 1.0f;
+        if(amount >= 9)
+        {
+            combo = 3.0f;
+        }
+        else if (amount >= 5)
+        {
+            combo = 2.0f;
+        }
+
+        _score += (int)(amount * combo);
 
         if (_score > _bestScore)
         {
