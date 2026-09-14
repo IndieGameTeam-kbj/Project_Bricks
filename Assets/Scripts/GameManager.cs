@@ -39,9 +39,9 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        ChangeState(GameState.Opening);
         //PlayerPrefs.DeleteAll();
         //PlayerPrefs.Save();
-        ChangeState(GameState.Opening);
     }
 
     public void StartNewGame()

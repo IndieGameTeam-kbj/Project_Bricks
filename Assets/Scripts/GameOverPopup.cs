@@ -19,7 +19,7 @@ public class GameOverPopup : MonoBehaviour
         _bestScore = ScoreManager.Instance.PrevBestScore;
 
         _scoreText.text = "0";
-        _bestScoreText.text = _bestScore.ToString();
+        _bestScoreText.text = _bestScore.ToString("N0");
 
         _scoreText.transform.localScale = Vector3.one;
         _bestScoreText.transform.localScale = Vector3.one;
@@ -38,7 +38,7 @@ public class GameOverPopup : MonoBehaviour
         DOTween.To(() => currentScore, value =>
             {
                 currentScore = value;
-                _scoreText.text = currentScore.ToString();
+                _scoreText.text = currentScore.ToString("N0");
             }, _score, _scoreCountDuration
         )
         .SetEase(Ease.OutQuad)
@@ -47,7 +47,7 @@ public class GameOverPopup : MonoBehaviour
         {
             if (ScoreManager.Instance.IsNewBestScore)
             {
-                _bestScoreText.text = ScoreManager.Instance.BestScore.ToString();
+                _bestScoreText.text = ScoreManager.Instance.BestScore.ToString("N0");
                 PlayBestScoreAnimation();
             }
         });

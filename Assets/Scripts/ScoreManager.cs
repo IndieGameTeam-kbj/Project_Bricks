@@ -1,3 +1,4 @@
+using System.Globalization;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -7,6 +8,7 @@ public class ScoreManager : MonoBehaviour
     [SerializeField] Board _board;
     [SerializeField] private TMP_Text _scoreText;
     [SerializeField] private GameObject _newBestIcon;
+    [SerializeField] private TMP_Text _comboText;
 
     private int _score = 0;
     private int _bestScore = 0;
@@ -15,6 +17,10 @@ public class ScoreManager : MonoBehaviour
     private float _punchScale = 1.2f;
     private float _punchDuration = 0.2f;
     private float _countDuration = 0.1f;
+    private float _comboScale = 1.0f;
+    private float _comboScaleIncrease = 0.2f;
+    private float _comboDuration = 0.4f;
+    private float _comboDisplayDuration = 0.4f;
 
     public int Score => _score;
     public int BestScore => _bestScore;
@@ -35,34 +41,39 @@ public class ScoreManager : MonoBehaviour
     public void Reset()
     {
         _score = 0;
-        _scoreText.text = _score.ToString();
-
+        _scoreText.text = _score.ToString("N0");
         _prevBestScore = _bestScore;
         _isNewBestScore = false;
-
         _newBestIcon.SetActive(false);
+        _comboText.DOKill();
+        _comboText.gameObject.SetActive(false);
     }
 
     public void RestoreScore(GameSaveData data)
     {
         _score = data.score;
-        _isNewBestScore = data.isNewBestScore;
-
-        _newBestIcon.SetActive(_isNewBestScore);
         RefreshScore();
+        _isNewBestScore = data.isNewBestScore;
+        _newBestIcon.SetActive(_isNewBestScore);
+        _comboText.DOKill();
+        _comboText.gameObject.SetActive(false);
     }
 
     public void RefreshScore()
     {
         _scoreText.transform.DOKill();
         _scoreText.transform.localScale = Vector3.one;
-        _scoreText.text = _score.ToString();
+        _scoreText.text = _score.ToString("N0");
     }
 
     private void AddScore(int amount)
     {
         float combo = 1.0f;
-        if(amount >= 9)
+        if(amount >= 13)
+        {
+            combo = 4.0f;
+        }
+        else if(amount >= 9)
         {
             combo = 3.0f;
         }
@@ -85,11 +96,16 @@ public class ScoreManager : MonoBehaviour
             SaveManager.Instance.SaveBestScore(_score);
             _bestScore = _score;
         }
+
+        if (combo > 1.0f)
+        {
+            PlayComboAnimation((int)combo);
+        }
     }
 
     public void ShowScore()
     {
-        int.TryParse(_scoreText.text, out int displayedScore);
+        int.TryParse(_scoreText.text, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out int displayedScore);
         PlayScoreAnimation(displayedScore, _score);
     }
 
@@ -102,7 +118,7 @@ public class ScoreManager : MonoBehaviour
 
         DOTween.To(() => previousScore, value =>
             {
-                _scoreText.text = value.ToString();
+                _scoreText.text = value.ToString("N0");
             },
             targetScore, _countDuration
         )
@@ -112,6 +128,29 @@ public class ScoreManager : MonoBehaviour
         sequence.Append(target.DOScale(Vector3.one * _punchScale, _punchDuration * 0.5f).SetEase(Ease.OutQuad));
         sequence.Append(target.DOScale(Vector3.one * 0.95f, _punchDuration * 0.2f).SetEase(Ease.InOutQuad));
         sequence.Append(target.DOScale(Vector3.one, _punchDuration * 0.3f).SetEase(Ease.OutQuad));
+    }
+
+    private void PlayComboAnimation(int combo)
+    {
+        _comboText.DOKill();
+        _comboText.text = $"x{combo} Combo!";
+        _comboText.gameObject.SetActive(true);
+
+        Transform target = _comboText.transform;
+        target.localScale = Vector3.zero;
+        _comboText.alpha = 1.0f;
+
+        float targetScale = _comboScale + combo * _comboScaleIncrease;
+
+        Sequence sequence = DOTween.Sequence();
+        sequence.Append(target.DOScale(Vector3.one * targetScale, _comboDuration * 0.6f).SetEase(Ease.OutBack));
+        sequence.Append(target.DOScale(Vector3.one, _comboDuration * 0.4f).SetEase(Ease.OutQuad));
+        sequence.AppendInterval(_comboDisplayDuration);
+        sequence.Append(_comboText.DOFade(0.0f, 0.2f));
+        sequence.OnComplete(() =>
+        {
+            _comboText.gameObject.SetActive(false);
+        });
     }
 
     private void OnEnable()

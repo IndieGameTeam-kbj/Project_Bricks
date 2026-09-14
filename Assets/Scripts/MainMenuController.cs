@@ -9,7 +9,7 @@ public class MainMenuController : MonoBehaviour
 
     public void Init()
     {
-        _bestScoreText.text = SaveManager.Instance.LoadBestScore().ToString();
+        _bestScoreText.text = SaveManager.Instance.LoadBestScore().ToString("N0");
         InitPlayButton();
         _soundToggle.Init();
     }
