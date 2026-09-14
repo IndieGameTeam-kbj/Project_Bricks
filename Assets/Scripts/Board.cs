@@ -53,8 +53,9 @@ public class Board : MonoBehaviour
 
         slot.Place(brick);
         brick.Place(slot.transform.position);
+
         bool lineDestroyed = CheckLine(slot);
-        
+
         if (!lineDestroyed && IsFull())
         {
             GameManager.Instance.GameOver();
@@ -84,174 +85,22 @@ public class Board : MonoBehaviour
         return slot != null && !slot.IsPlaced;
     }
 
-    //private bool CheckLine(BoardSlot startSlot)
-    //{
-    //    BrickController startBrick = startSlot.PlacedBrick;
-
-    //    if (startBrick == null) return false;
-
-    //    _destructionOrder.Clear();
-
-    //    foreach (BrickType type in startBrick.Types)
-    //    {
-    //        List<List<BoardSlot>> lineDestructionOrder = new List<List<BoardSlot>>
-    //        {
-    //            new List<BoardSlot> { startSlot }
-    //        };
-
-    //        var offset = GetOffset(type);
-
-    //        int row = startSlot.Row;
-    //        int column = startSlot.Column;
-
-    //        int rowOffsetPlus = offset.rowOffset;
-    //        int columnOffsetPlus = offset.columnOffset;
-
-    //        int rowOffsetMinus = -offset.rowOffset;
-    //        int columnOffsetMinus = -offset.columnOffset;
-
-    //        bool plus = true;
-    //        bool minus = true;
-
-    //        bool plusWall = false;
-    //        bool minusWall = false;
-
-    //        int count = 0;
-
-    //        while (plus || minus)
-    //        {
-    //            count++;
-
-    //            List<BoardSlot> currentLevel = new List<BoardSlot>();
-
-    //            if (plus)
-    //            {
-    //                if (TryGetLineSlot(row, column, rowOffsetPlus, columnOffsetPlus, count, type, out BoardSlot slot))
-    //                {
-    //                    currentLevel.Add(slot);
-    //                }
-    //                else
-    //                {
-    //                    int targetRow = row + rowOffsetPlus * count;
-    //                    int targetColumn = column + columnOffsetPlus * count;
-
-    //                    if (IsOutsideBoard(targetRow, targetColumn))
-    //                    {
-    //                        plus = false;
-    //                        plusWall = true;
-    //                    }
-    //                    else
-    //                    {
-    //                        plus = false;
-    //                    }
-    //                }
-    //            }
-
-    //            if (minus)
-    //            {
-    //                if (TryGetLineSlot(row, column, rowOffsetMinus, columnOffsetMinus, count, type, out BoardSlot slot))
-    //                {
-    //                    currentLevel.Add(slot);
-    //                }
-    //                else
-    //                {
-    //                    int targetRow = row + rowOffsetMinus * count;
-    //                    int targetColumn = column + columnOffsetMinus * count;
-
-    //                    if (IsOutsideBoard(targetRow, targetColumn))
-    //                    {
-    //                        minus = false;
-    //                        minusWall = true;
-    //                    }
-    //                    else
-    //                    {
-    //                        minus = false;
-    //                    }
-    //                }
-    //            }
-
-    //            if (currentLevel.Count > 0)
-    //            {
-    //                lineDestructionOrder.Add(currentLevel);
-    //            }
-
-    //            if (plusWall && minusWall)
-    //            {
-    //                break;
-    //            }
-
-    //            if (!plus && !minus)
-    //            {
-    //                break;
-    //            }
-    //        }
-
-    //        if (!plusWall || !minusWall)
-    //        {
-    //            continue;
-    //        }
-
-    //        for (int level = 0; level < lineDestructionOrder.Count; level++)
-    //        {
-    //            if (_destructionOrder.Count <= level)
-    //            {
-    //                _destructionOrder.Add(new List<BoardSlot>());
-    //            }
-
-    //            foreach (BoardSlot slot in lineDestructionOrder[level])
-    //            {
-    //                if (!_destructionOrder[level].Contains(slot))
-    //                {
-    //                    _destructionOrder[level].Add(slot);
-    //                }
-    //            }
-    //        }
-    //    }
-
-    //    if (_destructionOrder.Count == 0) return false;
-
-    //    List<List<BoardSlot>> destructionOrder = _destructionOrder;
-    //    _destructionOrder = new List<List<BoardSlot>>();
-
-    //    int targetCount = 0;
-
-    //    foreach (List<BoardSlot> level in destructionOrder)
-    //    {
-    //        foreach (BoardSlot slot in level)
-    //        {
-    //            if (slot.PlacedBrick != null && slot.PlacedBrick.State != BrickState.Destroying)
-    //            {
-    //                targetCount++;
-    //            }
-    //        }
-    //    }
-
-    //    LineDestroyed?.Invoke(targetCount);
-    //    StartCoroutine(DestroyLine(destructionOrder));
-
-    //    return true;
-    //}
-
     private bool CheckLine(BoardSlot startSlot)
     {
-        BrickController startBrick = startSlot.PlacedBrick;
-
-        if (startBrick == null) return false;
+        if (startSlot.PlacedBrick == null) return false;
 
         _destructionOrder.Clear();
 
-        // 시작 브릭에서 연결될 수 있는 모든 완성 줄을 찾는다.
+        // 1. 시작 브릭에서 연결되는 모든 완성 줄을 찾는다.
         HashSet<BoardSlot> connectedSlots = BuildCompleteLineNetwork(startSlot);
 
-        // 각 브릭의 모든 줄 조건을 검사해서
-        // 실제로 파괴 가능한 브릭만 남긴다.
+        // 2. 연결된 브릭 중 실제로 파괴 가능한 브릭만 남긴다.
         HashSet<BoardSlot> destroyableSlots = ResolveDestroyableSlots(connectedSlots);
 
-        // 시작 브릭이 파괴 가능한 상태가 아니라면
-        // 이번 배치에서는 아무것도 터지지 않는다.
+        // 시작 브릭이 파괴되지 않는다면 아무것도 터뜨리지 않는다.
         if (!destroyableSlots.Contains(startSlot)) return false;
 
-        // 실제 파괴 순서를 만든다.
+        // 3. 실제 파괴 순서를 계산한다.
         BuildDestructionOrder(startSlot, destroyableSlots);
 
         if (_destructionOrder.Count == 0) return false;
@@ -259,101 +108,13 @@ public class Board : MonoBehaviour
         List<List<BoardSlot>> destructionOrder = _destructionOrder;
         _destructionOrder = new List<List<BoardSlot>>();
 
-        int targetCount = 0;
-
-        foreach (List<BoardSlot> level in destructionOrder)
-        {
-            foreach (BoardSlot slot in level)
-            {
-                if (slot.PlacedBrick != null && slot.PlacedBrick.State != BrickState.Destroying)
-                {
-                    targetCount++;
-                }
-            }
-        }
+        int targetCount = CountDestroyTargets(destructionOrder);
 
         if (targetCount == 0) return false;
 
         LineDestroyed?.Invoke(targetCount);
         StartCoroutine(DestroyLine(destructionOrder));
         return true;
-    }
-
-    private void BuildDestructionOrder(BoardSlot startSlot, HashSet<BoardSlot> destroyableSlots)
-    {
-        Dictionary<BoardSlot, int> destructionLevels = new Dictionary<BoardSlot, int>();
-        Queue<BoardSlot> queue = new Queue<BoardSlot>();
-
-        destructionLevels[startSlot] = 0;
-        queue.Enqueue(startSlot);
-
-        while (queue.Count > 0)
-        {
-            BoardSlot currentSlot = queue.Dequeue();
-
-            if (!destructionLevels.TryGetValue(currentSlot, out int currentLevel)) continue;
-
-            BrickController currentBrick = currentSlot.PlacedBrick;
-
-            if (currentBrick == null || currentBrick.State != BrickState.Placed) continue;
-
-            foreach (BrickType type in currentBrick.Types)
-            {
-                if (!TryGetCompletedLine(currentSlot, type, out List<List<BoardSlot>> lineOrder)) continue;
-
-                // 이 줄에 포함된 모든 브릭이 실제 파괴 가능한 상태인지 확인한다.
-                // 하나라도 아니면 이 줄 전체를 따라가지 않는다.
-                if (!IsLineDestroyable(lineOrder, destroyableSlots)) continue;
-
-                // 현재 브릭은 이미 파괴 순서에 들어있으므로
-                // 다음 칸부터 추가한다.
-                for (int level = 1; level < lineOrder.Count; level++)
-                {
-                    foreach (BoardSlot nextSlot in lineOrder[level])
-                    {
-                        if (!destroyableSlots.Contains(nextSlot)) continue;
-
-                        int targetLevel = currentLevel + level;
-
-                        if (!destructionLevels.TryGetValue(nextSlot, out int previousLevel))
-                        {
-                            destructionLevels.Add(nextSlot, targetLevel);
-                            queue.Enqueue(nextSlot);
-                        }
-                        else if (targetLevel < previousLevel)
-                        {
-                            // 더 짧은 경로를 발견했다면
-                            // 더 빠른 파괴 레벨로 변경한다.
-                            destructionLevels[nextSlot] = targetLevel;
-                            queue.Enqueue(nextSlot);
-                        }
-                    }
-                }
-            }
-        }
-
-        // 계산된 레벨을 실제 List<List<BoardSlot>> 형태로 만든다.
-        _destructionOrder.Clear();
-
-        int maxLevel = 0;
-
-        foreach (KeyValuePair<BoardSlot, int> pair in destructionLevels)
-        {
-            if (pair.Value > maxLevel) maxLevel = pair.Value;
-        }
-
-        for (int level = 0; level <= maxLevel; level++)
-        {
-            _destructionOrder.Add(new List<BoardSlot>());
-        }
-
-        foreach (KeyValuePair<BoardSlot, int> pair in destructionLevels)
-        {
-            if (!_destructionOrder[pair.Value].Contains(pair.Key))
-            {
-                _destructionOrder[pair.Value].Add(pair.Key);
-            }
-        }
     }
 
     private HashSet<BoardSlot> BuildCompleteLineNetwork(BoardSlot startSlot)
@@ -367,12 +128,11 @@ public class Board : MonoBehaviour
         while (queue.Count > 0)
         {
             BoardSlot currentSlot = queue.Dequeue();
+            BrickController brick = currentSlot.PlacedBrick;
 
-            BrickController currentBrick = currentSlot.PlacedBrick;
+            if (!IsPlacedBrick(brick)) continue;
 
-            if (currentBrick == null || currentBrick.State != BrickState.Placed) continue;
-
-            foreach (BrickType type in currentBrick.Types)
+            foreach (BrickType type in brick.Types)
             {
                 if (!TryGetCompletedLine(currentSlot, type, out List<List<BoardSlot>> lineOrder)) continue;
 
@@ -380,10 +140,9 @@ public class Board : MonoBehaviour
                 {
                     foreach (BoardSlot slot in level)
                     {
-                        if (connectedSlots.Add(slot))
-                        {
-                            queue.Enqueue(slot);
-                        }
+                        if (!connectedSlots.Add(slot)) continue;
+
+                        queue.Enqueue(slot);
                     }
                 }
             }
@@ -406,49 +165,15 @@ public class Board : MonoBehaviour
 
             foreach (BoardSlot slot in destroyableSlots)
             {
-                BrickController brick = slot.PlacedBrick;
-
-                if (brick == null || brick.State != BrickState.Placed)
+                if (!CanDestroy(slot, destroyableSlots))
                 {
                     invalidSlots.Add(slot);
-                    continue;
-                }
-
-                // 이 브릭이 가지고 있는 모든 줄을 검사한다.
-                foreach (BrickType type in brick.Types)
-                {
-                    if (!TryGetCompletedLine(slot, type, out List<List<BoardSlot>> lineOrder))
-                    {
-                        // 자기 줄 중 하나라도 완성되지 않았다면
-                        // 이 브릭은 파괴 불가능하다.
-                        invalidSlots.Add(slot);
-                        break;
-                    }
-
-                    // 이 줄에 들어있는 모든 브릭이
-                    // 파괴 가능한 상태여야 한다.
-                    foreach (List<BoardSlot> level in lineOrder)
-                    {
-                        foreach (BoardSlot lineSlot in level)
-                        {
-                            if (!destroyableSlots.Contains(lineSlot))
-                            {
-                                invalidSlots.Add(slot);
-                                break;
-                            }
-                        }
-
-                        if (invalidSlots.Contains(slot)) break;
-                    }
-
-                    if (invalidSlots.Contains(slot)) break;
                 }
             }
 
-            // 조건을 만족하지 못하는 브릭을 제거한다.
-            foreach (BoardSlot invalidSlot in invalidSlots)
+            foreach (BoardSlot slot in invalidSlots)
             {
-                if (destroyableSlots.Remove(invalidSlot))
+                if (destroyableSlots.Remove(slot))
                 {
                     changed = true;
                 }
@@ -459,7 +184,23 @@ public class Board : MonoBehaviour
         return destroyableSlots;
     }
 
-    private bool IsLineDestroyable(List<List<BoardSlot>> lineOrder, HashSet<BoardSlot> destroyableSlots)
+    private bool CanDestroy(BoardSlot slot, HashSet<BoardSlot> destroyableSlots)
+    {
+        BrickController brick = slot.PlacedBrick;
+
+        if (!IsPlacedBrick(brick)) return false;
+
+        foreach (BrickType type in brick.Types)
+        {
+            if (!TryGetCompletedLine(slot, type, out List<List<BoardSlot>> lineOrder)) return false;
+
+            if (!AreAllSlotsDestroyable(lineOrder, destroyableSlots)) return false;
+        }
+
+        return true;
+    }
+
+    private bool AreAllSlotsDestroyable(List<List<BoardSlot>> lineOrder, HashSet<BoardSlot> destroyableSlots)
     {
         foreach (List<BoardSlot> level in lineOrder)
         {
@@ -472,144 +213,170 @@ public class Board : MonoBehaviour
         return true;
     }
 
-    private bool TryGetCompletedLine(BoardSlot startSlot, BrickType type, out List<List<BoardSlot>> lineDestructionOrder)
+    private void BuildDestructionOrder(BoardSlot startSlot, HashSet<BoardSlot> destroyableSlots)
     {
-        lineDestructionOrder = new List<List<BoardSlot>>
+        Dictionary<BoardSlot, int> levels = new Dictionary<BoardSlot, int>();
+        Queue<BoardSlot> queue = new Queue<BoardSlot>();
+
+        levels[startSlot] = 0;
+        queue.Enqueue(startSlot);
+
+        while (queue.Count > 0)
+        {
+            BoardSlot currentSlot = queue.Dequeue();
+
+            if (!levels.TryGetValue(currentSlot, out int currentLevel)) continue;
+
+            BrickController brick = currentSlot.PlacedBrick;
+
+            if (!IsPlacedBrick(brick)) continue;
+
+            foreach (BrickType type in brick.Types)
+            {
+                if (!TryGetCompletedLine(currentSlot, type, out List<List<BoardSlot>> lineOrder)) continue;
+
+                if (!AreAllSlotsDestroyable(lineOrder, destroyableSlots)) continue;
+
+                // 현재 브릭은 이미 현재 레벨에 있으므로
+                // 다음 레벨부터 추가한다.
+                for (int level = 1; level < lineOrder.Count; level++)
+                {
+                    int targetLevel = currentLevel + level;
+
+                    foreach (BoardSlot slot in lineOrder[level])
+                    {
+                        if (!destroyableSlots.Contains(slot)) continue;
+
+                        if (!levels.TryGetValue(slot, out int previousLevel))
+                        {
+                            levels.Add(slot, targetLevel);
+                            queue.Enqueue(slot);
+                        }
+                        else if (targetLevel < previousLevel)
+                        {
+                            levels[slot] = targetLevel;
+                            queue.Enqueue(slot);
+                        }
+                    }
+                }
+            }
+        }
+
+        CreateDestructionOrder(levels);
+    }
+
+    private void CreateDestructionOrder(Dictionary<BoardSlot, int> levels)
+    {
+        _destructionOrder.Clear();
+
+        int maxLevel = 0;
+
+        foreach (int level in levels.Values)
+        {
+            maxLevel = Mathf.Max(maxLevel, level);
+        }
+
+        for (int level = 0; level <= maxLevel; level++)
+        {
+            _destructionOrder.Add(new List<BoardSlot>());
+        }
+
+        foreach (KeyValuePair<BoardSlot, int> pair in levels)
+        {
+            _destructionOrder[pair.Value].Add(pair.Key);
+        }
+    }
+
+    private bool TryGetCompletedLine(BoardSlot startSlot, BrickType type, out List<List<BoardSlot>> lineOrder)
+    {
+        lineOrder = new List<List<BoardSlot>>
         {
             new List<BoardSlot> { startSlot }
         };
 
-        var offset = GetOffset(type);
+        (int rowOffset, int columnOffset) = GetOffset(type);
 
-        int row = startSlot.Row;
-        int column = startSlot.Column;
+        List<BoardSlot> plusSlots = new List<BoardSlot>();
+        List<BoardSlot> minusSlots = new List<BoardSlot>();
 
-        int rowOffsetPlus = offset.rowOffset;
-        int columnOffsetPlus = offset.columnOffset;
+        bool plusWall = CollectDirection(startSlot, type, rowOffset, columnOffset, plusSlots );
+        bool minusWall = CollectDirection(startSlot, type, -rowOffset, -columnOffset, minusSlots);
 
-        int rowOffsetMinus = -offset.rowOffset;
-        int columnOffsetMinus = -offset.columnOffset;
+        // 양쪽 모두 보드 끝까지 도달해야 완성된 줄이다.
+        if (!plusWall || !minusWall) return false;
 
-        bool plus = true;
-        bool minus = true;
+        int maxCount = Mathf.Max(plusSlots.Count, minusSlots.Count );
 
-        bool plusWall = false;
-        bool minusWall = false;
-
-        int count = 0;
-
-        while (plus || minus)
+        for (int i = 0; i < maxCount; i++)
         {
-            count++;
+            List<BoardSlot> level = new List<BoardSlot>();
 
-            List<BoardSlot> currentLevel = new List<BoardSlot>();
+            if (i < plusSlots.Count) level.Add(plusSlots[i]);
 
-            if (plus)
-            {
-                if (TryGetLineSlot(row, column, rowOffsetPlus, columnOffsetPlus, count, type, out BoardSlot slot))
-                {
-                    currentLevel.Add(slot);
-                }
-                else
-                {
-                    int targetRow = row + rowOffsetPlus * count;
-                    int targetColumn = column + columnOffsetPlus * count;
+            if (i < minusSlots.Count) level.Add(minusSlots[i]);
 
-                    if (IsOutsideBoard(targetRow, targetColumn))
-                    {
-                        plus = false;
-                        plusWall = true;
-                    }
-                    else
-                    {
-                        plus = false;
-                    }
-                }
-            }
-
-            if (minus)
-            {
-                if (TryGetLineSlot(row, column, rowOffsetMinus, columnOffsetMinus, count, type, out BoardSlot slot))
-                {
-                    currentLevel.Add(slot);
-                }
-                else
-                {
-                    int targetRow = row + rowOffsetMinus * count;
-                    int targetColumn = column + columnOffsetMinus * count;
-
-                    if (IsOutsideBoard(targetRow, targetColumn))
-                    {
-                        minus = false;
-                        minusWall = true;
-                    }
-                    else
-                    {
-                        minus = false;
-                    }
-                }
-            }
-
-            if (currentLevel.Count > 0)
-            {
-                lineDestructionOrder.Add(currentLevel);
-            }
-
-            if (plusWall && minusWall)
-            {
-                break;
-            }
-
-            if (!plus && !minus)
-            {
-                break;
-            }
-        }
-
-        return plusWall && minusWall;
-    }
-
-    private bool TryGetLineSlot(int row, int column, int rowOffset, int columnOffset, int count, BrickType type, out BoardSlot slot)
-    {
-        slot = null;
-
-        int targetRow = row + rowOffset * count;
-        int targetColumn = column + columnOffset * count;
-
-        if (IsOutsideBoard(targetRow, targetColumn))
-        {
-            return false;
-        }
-
-        slot = _slots[targetRow, targetColumn];
-
-        if (slot == null || !slot.IsPlaced)
-        {
-            slot = null;
-            return false;
-        }
-
-        BrickController brick = slot.PlacedBrick;
-
-        if (brick == null)
-        {
-            slot = null;
-            return false;
-        }
-
-        if (brick.State != BrickState.Placed)
-        {
-            slot = null;
-            return false;
-        }
-
-        if (!HasBrickType(brick, type))
-        {
-            slot = null;
-            return false;
+            if (level.Count > 0) lineOrder.Add(level);
         }
 
         return true;
+    }
+
+    private bool CollectDirection(BoardSlot startSlot, BrickType type, int rowOffset, int columnOffset, List<BoardSlot> slots)
+    {
+        int row = startSlot.Row;
+        int column = startSlot.Column;
+
+        int distance = 1;
+        while (true)
+        {
+            int targetRow = row + rowOffset * distance;
+            int targetColumn = column + columnOffset * distance;
+
+            if (IsOutsideBoard(targetRow, targetColumn)) return true;
+
+            BoardSlot slot = _slots[targetRow, targetColumn];
+
+            if (!IsLineSlot(slot, type)) return false;
+
+            slots.Add(slot);
+            distance++;
+        }
+    }
+
+    private bool IsLineSlot(BoardSlot slot, BrickType type)
+    {
+        if (slot == null || !slot.IsPlaced) return false;
+
+        BrickController brick = slot.PlacedBrick;
+
+        if (!IsPlacedBrick(brick)) return false;
+
+        return HasBrickType(brick, type);
+    }
+
+    private bool IsPlacedBrick(BrickController brick)
+    {
+        return brick != null && brick.State == BrickState.Placed;
+    }
+
+    private int CountDestroyTargets(List<List<BoardSlot>> destructionOrder)
+    {
+        int count = 0;
+
+        foreach (List<BoardSlot> level in destructionOrder)
+        {
+            foreach (BoardSlot slot in level)
+            {
+                BrickController brick = slot.PlacedBrick;
+
+                if (brick != null && brick.State != BrickState.Destroying)
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 
     private bool IsOutsideBoard(int row, int column)
@@ -651,6 +418,7 @@ public class Board : MonoBehaviour
     private IEnumerator DestroyLine(List<List<BoardSlot>> destructionOrder)
     {
         int destroyedBrickCount = 0;
+
         foreach (List<BoardSlot> level in destructionOrder)
         {
             foreach (BoardSlot slot in level)
@@ -670,7 +438,9 @@ public class Board : MonoBehaviour
 
         // 저장 요청
         BoardManager.Instance.RequestSave();
-        // 점수는 이미 올랐고, 여기서는 숫자 연출만 실행
+
+        // 점수는 이미 LineDestroyed에서 증가했으므로
+        // 여기서는 숫자 연출만 실행한다.
         ScoreManager.Instance.ShowScore();
     }
 
