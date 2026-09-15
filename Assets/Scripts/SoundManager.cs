@@ -4,6 +4,7 @@ public class SoundManager : MonoBehaviour
 {
     [Header("Audio Sources")]
     [SerializeField] private AudioSource _sfxSource;
+    [SerializeField] private AudioSource _pitchSfxSource;
 
     [Header("Block Sounds")]
     [SerializeField] private AudioClip[] _blockPickUpSounds;
@@ -25,6 +26,9 @@ public class SoundManager : MonoBehaviour
     [Header("Opening")]
     [SerializeField] private AudioClip _openingSound;
     [SerializeField] private AudioClip _openingEndSound;
+
+    [Header("Combo")]
+    [SerializeField] private AudioClip _comboSound;
 
     [Header("Settings")]
     [SerializeField] private float _minPitch = 0.95f;
@@ -107,6 +111,19 @@ public class SoundManager : MonoBehaviour
         Play(_openingEndSound);
     }
 
+    public void PlayComboSound(int combo)
+    {
+        float pitch = combo switch
+        {
+            2 => 1.0f,
+            3 => 1.15f,
+            4 => 1.3f,
+            _ => 1.0f
+        };
+
+        PlayWithPitch(_comboSound, pitch);
+    }
+
     private void PlayRandom(AudioClip[] clips)
     {
         if (clips == null || clips.Length == 0)
@@ -130,6 +147,20 @@ public class SoundManager : MonoBehaviour
         _sfxSource.pitch = pitch;
 
         _sfxSource.PlayOneShot(clip, volume);
+    }
+
+    private void PlayWithPitch(
+    AudioClip clip,
+    float pitch,
+    float volume = 1.0f)
+    {
+        if (clip == null || _pitchSfxSource == null)
+        {
+            return;
+        }
+
+        _pitchSfxSource.pitch = pitch;
+        _pitchSfxSource.PlayOneShot(clip, volume);
     }
 
     // 사운드 볼륨 조절 및 음소거 기능

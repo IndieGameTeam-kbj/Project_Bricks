@@ -116,6 +116,7 @@ public class ScoreManager : MonoBehaviour
         if (combo > 1.0f)
         {
             PlayComboAnimation((int)combo);
+            SoundManager.Instance.PlayComboSound((int)combo);
         }
     }
 
