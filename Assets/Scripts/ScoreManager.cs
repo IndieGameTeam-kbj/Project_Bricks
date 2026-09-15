@@ -57,6 +57,7 @@ public class ScoreManager : MonoBehaviour
     public void RestoreScore(GameSaveData data)
     {
         _score = data.score;
+        _prevBestScore = data.prevBestScore;
         _bestScore = SaveManager.Instance.LoadBestScore();
 
         RefreshScore();

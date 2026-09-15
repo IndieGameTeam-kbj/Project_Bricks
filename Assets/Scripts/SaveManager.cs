@@ -92,7 +92,7 @@ public class SaveManager : MonoBehaviour
         {
             score = scoreManager.Score,
             isNewBestScore = scoreManager.IsNewBestScore,
-
+            prevBestScore = scoreManager.PrevBestScore,
             preparedKinds = new int[preparedBricks.Length]
         };
 
