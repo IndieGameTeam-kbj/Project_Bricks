@@ -99,7 +99,7 @@ public class SaveManager : MonoBehaviour
         // 보드 위 블록 정보 수집
         foreach (BoardSlot slot in slots)
         {
-            if (!slot.IsPlaced || slot.PlacedBrick == null) continue;
+            if (!slot.IsPlaced || slot.PlacedBrick == null || slot.PlacedBrick.State == BrickState.Destroying) continue;
 
             data.boardBricks.Add(new BrickSaveData
             {

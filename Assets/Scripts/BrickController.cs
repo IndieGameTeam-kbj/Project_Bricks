@@ -101,9 +101,13 @@ public class BrickController : MonoBehaviour
         _animationController.PlaySpawnAnimation(_originalPosition, OnSpawnAnimationComplete);
     }
 
-    public void Destroy()
+    public void BeforeDestroy()
     {
         _state = BrickState.Destroying;
+    }
+
+    public void Destroy()
+    {
         _animationController.PlayDestroyAnimation(OnDestroyAnimationComplete);
     }
 

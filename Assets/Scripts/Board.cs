@@ -417,6 +417,18 @@ public class Board : MonoBehaviour
 
     private IEnumerator DestroyLine(List<List<BoardSlot>> destructionOrder)
     {
+        foreach (List<BoardSlot> level in destructionOrder)
+        {
+            foreach (BoardSlot slot in level)
+            {
+                BrickController brick = slot.PlacedBrick;
+
+                if (brick == null) continue;
+
+                brick.BeforeDestroy();
+            }
+        }
+
         int destroyedBrickCount = 0;
 
         foreach (List<BoardSlot> level in destructionOrder)
@@ -427,8 +439,8 @@ public class Board : MonoBehaviour
 
                 if (brick == null) continue;
 
-                slot.Clear();
                 brick.Destroy();
+                slot.Clear();
                 SoundManager.Instance.PlayBlockDestroy(destroyedBrickCount);
                 destroyedBrickCount++;
             }
