@@ -10,10 +10,13 @@ public class ScoreManager : MonoBehaviour
     [SerializeField] private GameObject _newBestIcon;
     [SerializeField] private TMP_Text _comboText;
 
+    //Score Settings
     private int _score = 0;
     private int _bestScore = 0;
     private int _prevBestScore = 0;
     private bool _isNewBestScore = false;
+
+    //Animation Settings
     private float _punchScale = 1.2f;
     private float _punchDuration = 0.2f;
     private float _countDuration = 0.1f;
@@ -21,6 +24,11 @@ public class ScoreManager : MonoBehaviour
     private float _comboScaleIncrease = 0.2f;
     private float _comboDuration = 0.4f;
     private float _comboDisplayDuration = 0.4f;
+
+    // Best Icon Animation Settings
+    private Vector3 _bestIconOriginalScale =  new Vector3(0.6f, 0.65f, 1.0f);
+    private float _bestIconPunchScale = 1.2f;
+    private float _bestIconDuration = 0.5f;
 
     public int Score => _score;
     public int BestScore => _bestScore;
@@ -50,6 +58,11 @@ public class ScoreManager : MonoBehaviour
         _prevBestScore = _bestScore;
         _isNewBestScore = false;
         _newBestIcon.SetActive(false);
+
+        _newBestIcon.transform.DOKill();
+        _newBestIcon.transform.localScale = _bestIconOriginalScale;
+        _newBestIcon.SetActive(false);
+
         _comboText.DOKill();
         _comboText.gameObject.SetActive(false);
     }
@@ -100,7 +113,7 @@ public class ScoreManager : MonoBehaviour
             {
                 SoundManager.Instance.PlayBestScores();
                 _isNewBestScore = true;
-                _newBestIcon.SetActive(true);
+                PlayBestIconAnimation();
             }
             SaveManager.Instance.SaveBestScore(_score);
             _bestScore = _score;
@@ -159,6 +172,27 @@ public class ScoreManager : MonoBehaviour
         sequence.OnComplete(() =>
         {
             _comboText.gameObject.SetActive(false);
+        });
+    }
+
+    private void PlayBestIconAnimation()
+    {
+        Transform target = _newBestIcon.transform;
+
+        target.DOKill();
+        _newBestIcon.SetActive(true);
+
+        target.localScale = Vector3.zero;
+        target.localRotation = Quaternion.identity;
+
+        Sequence sequence = DOTween.Sequence();
+
+        sequence.Append(target.DOScale(_bestIconOriginalScale, _bestIconDuration).SetEase(Ease.OutBack));
+        sequence.Join(target.DOShakeRotation(_bestIconDuration, new Vector3(0f, 0f, 5f), vibrato: 5, randomness: 10f, fadeOut: true));
+        sequence.OnComplete(() =>
+        {
+            target.localScale = _bestIconOriginalScale;
+            target.localRotation = Quaternion.identity;
         });
     }
 

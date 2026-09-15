@@ -72,7 +72,7 @@ public class SoundManager : MonoBehaviour
         AudioClip clip = _blockDestroySounds[Random.Range(0, _blockDestroySounds.Length)];
 
         // 연쇄 파괴가 진행될수록 음이 높아짐
-        float comboPitch = 1f + comboCount * 0.08f;
+        float comboPitch = 1f + comboCount * 0.03f;
         Play(clip, comboPitch);
     }
 
