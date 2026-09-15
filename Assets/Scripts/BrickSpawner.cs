@@ -9,10 +9,16 @@ public class BrickSpawner : MonoBehaviour
     [SerializeField] private Transform[] _brickPreparedPoints;
     [SerializeField] private Transform _brickParent;
 
-    public Transform[] PreparedPoints => _brickPreparedPoints;
     private Coroutine _spawnCoroutine;
     private float _spawnInterval = 0.2f;
     private float _spawnWeight = 0.0f;
+    private float[] _oneLineWeights = { 35.0f, 35.0f, 15.0f, 15.0f };
+    private float[] _twoLineWeights = { 55.0f, 10.0f, 10.0f, 10.0f, 10.0f, 5.0f };
+    private int _lastOneLineIndex = -1;
+    private int _lastTwoLineIndex = -1;
+    private float _repeatChance = 5.0f;
+
+    public Transform[] PreparedPoints => _brickPreparedPoints;
 
     public void Reset()
     {
@@ -21,7 +27,10 @@ public class BrickSpawner : MonoBehaviour
             StopCoroutine(_spawnCoroutine);
             _spawnCoroutine = null;
         }
+
         _spawnWeight = 0.0f;
+        _lastOneLineIndex = -1;
+        _lastTwoLineIndex = -1;
     }
 
     public BrickController[] SpawnBricks()
@@ -39,24 +48,21 @@ public class BrickSpawner : MonoBehaviour
 
     private BrickController SpawnBrick(int index)
     {
-        // 95 / 5
-        // 70 / 30
-        // 70 / 20 / 10
+        int randomIndex = GetRandomBrickIndex();
+        GameObject spawnedObject = Instantiate(_brickPrefabs[randomIndex], _brickSpawnPoint.position, Quaternion.identity, _brickParent);
+        BrickController brick = spawnedObject.GetComponent<BrickController>();
+        brick.Init(_brickPreparedPoints[index].position);
+        return brick;
+    }
+
+    private int GetRandomBrickIndex()
+    {
         float randomValue = Random.Range(0.0f, 100.0f);
 
-        int randomIndex;
         if (randomValue < 95.0f - _spawnWeight)
         {
-            float oneLineValue = Random.Range(0.0f, 100.0f);
-
-            if (oneLineValue < 70.0f)
-            {
-                randomIndex = Random.Range(0, 2);
-            }
-            else
-            {
-                randomIndex = Random.Range(2, 4);
-            }
+            int localIndex = GetWeightedIndex(_oneLineWeights, _lastOneLineIndex);
+            _lastOneLineIndex = localIndex;
 
             if (_spawnWeight < 0.0f)
             {
@@ -66,25 +72,16 @@ public class BrickSpawner : MonoBehaviour
             {
                 _spawnWeight += 1.0f;
             }
+
+            return localIndex;
         }
+
         else
         {
-            float twoLineValue = Random.Range(0.0f, 100.0f);
+            int localIndex = GetWeightedIndex(_twoLineWeights, _lastTwoLineIndex);
+            _lastTwoLineIndex = localIndex;
 
-            if (twoLineValue < 70.0f)
-            {
-                randomIndex = 4;
-            }
-            else if (twoLineValue < 90.0f)
-            {
-                randomIndex = Random.Range(5, 9);
-            }
-            else
-            {
-                randomIndex = 9;
-            }
-
-            if(_spawnWeight > 0.0f)
+            if (_spawnWeight > 0.0f)
             {
                 _spawnWeight = 0.0f;
             }
@@ -92,12 +89,36 @@ public class BrickSpawner : MonoBehaviour
             {
                 _spawnWeight -= 1.0f;
             }
-        }
 
-        GameObject spawnedObject = Instantiate(_brickPrefabs[randomIndex], _brickSpawnPoint.position, Quaternion.identity, _brickParent);
-        BrickController brick = spawnedObject.GetComponent<BrickController>();
-        brick.Init(_brickPreparedPoints[index].position);
-        return brick;
+            return localIndex + 4;
+        }
+    }
+
+    private int GetWeightedIndex(float[] baseWeights, int lastIndex)
+    {
+        while (true)
+        {
+            float randomValue = Random.Range(0.0f, 100.0f);
+            int randomIndex = -1;
+
+            for (int i = 0; i < baseWeights.Length; i++)
+            {
+                if (randomValue < baseWeights[i])
+                {
+                    randomIndex = i;
+                    break;
+                }
+
+                randomValue -= baseWeights[i];
+            }
+
+            if (randomIndex != lastIndex) return randomIndex;
+
+            if (Random.Range(0.0f, 100.0f) < _repeatChance)
+            {
+                return randomIndex;
+            }
+        }
     }
 
     private IEnumerator SpawnBricksRoutine(BrickController[] bricks)
@@ -107,6 +128,7 @@ public class BrickSpawner : MonoBehaviour
         for (int i = 0; i < bricks.Length; i++)
         {
             bricks[i].Spawn();
+
             yield return new WaitForSeconds(_spawnInterval);
         }
 
@@ -119,10 +141,7 @@ public class BrickSpawner : MonoBehaviour
         {
             BrickController brick = prefab.GetComponent<BrickController>();
 
-            if (brick.Kind == kind)
-            {
-                return prefab;
-            }
+            if (brick.Kind == kind) return prefab;
         }
 
         throw new System.InvalidOperationException($"타입에 맞는 프리팹이 없습니다: {kind}");
@@ -155,7 +174,7 @@ public class BrickSpawner : MonoBehaviour
         {
             if (kinds[i] == -1) continue;
 
-            bricks[i] = Create( (BrickKind)kinds[i], _brickPreparedPoints[i].position, false );
+            bricks[i] = Create((BrickKind)kinds[i], _brickPreparedPoints[i].position, false);
         }
 
         return bricks;
