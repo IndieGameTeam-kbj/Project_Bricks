@@ -10,13 +10,11 @@ public class ScoreManager : MonoBehaviour
     [SerializeField] private GameObject _newBestIcon;
     [SerializeField] private TMP_Text _comboText;
 
-    //Score Settings
     private int _score = 0;
     private int _bestScore = 0;
     private int _prevBestScore = 0;
     private bool _isNewBestScore = false;
 
-    //Animation Settings
     private float _punchScale = 1.2f;
     private float _punchDuration = 0.2f;
     private float _countDuration = 0.1f;
@@ -24,10 +22,7 @@ public class ScoreManager : MonoBehaviour
     private float _comboScaleIncrease = 0.2f;
     private float _comboDuration = 0.4f;
     private float _comboDisplayDuration = 0.4f;
-
-    // Best Icon Animation Settings
     private Vector3 _bestIconOriginalScale =  new Vector3(0.6f, 0.65f, 1.0f);
-    private float _bestIconPunchScale = 1.2f;
     private float _bestIconDuration = 0.5f;
 
     public int Score => _score;
@@ -108,7 +103,6 @@ public class ScoreManager : MonoBehaviour
 
         if (_score > _bestScore)
         {
-            // 이번 판에서 신기록을 처음 달성한 순간에만 실행
             if (!_isNewBestScore)
             {
                 SoundManager.Instance.PlayBestScores();
@@ -134,7 +128,6 @@ public class ScoreManager : MonoBehaviour
     private void PlayScoreAnimation(int previousScore, int targetScore)
     {
         Transform target = _scoreText.transform;
-
         target.DOKill();
         target.localScale = Vector3.one;
 
@@ -157,7 +150,6 @@ public class ScoreManager : MonoBehaviour
         _comboText.DOKill();
         _comboText.text = $"x{combo} Combo!";
         _comboText.gameObject.SetActive(true);
-
         Transform target = _comboText.transform;
         target.localScale = Vector3.zero;
         _comboText.alpha = 1.0f;
@@ -178,15 +170,12 @@ public class ScoreManager : MonoBehaviour
     private void PlayBestIconAnimation()
     {
         Transform target = _newBestIcon.transform;
-
         target.DOKill();
         _newBestIcon.SetActive(true);
-
         target.localScale = Vector3.zero;
         target.localRotation = Quaternion.identity;
 
         Sequence sequence = DOTween.Sequence();
-
         sequence.Append(target.DOScale(_bestIconOriginalScale, _bestIconDuration).SetEase(Ease.OutBack));
         sequence.Join(target.DOShakeRotation(_bestIconDuration, new Vector3(0f, 0f, 5f), vibrato: 5, randomness: 10f, fadeOut: true));
         sequence.OnComplete(() =>

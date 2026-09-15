@@ -55,7 +55,6 @@ public class Board : MonoBehaviour
         brick.Place(slot.transform.position);
 
         bool lineDestroyed = CheckLine(slot);
-
         if (!lineDestroyed && IsFull())
         {
             GameManager.Instance.GameOver();
@@ -90,26 +89,18 @@ public class Board : MonoBehaviour
         if (startSlot.PlacedBrick == null) return false;
 
         _destructionOrder.Clear();
-
-        // 1. 시작 브릭에서 연결되는 모든 완성 줄을 찾는다.
+        
         HashSet<BoardSlot> connectedSlots = BuildCompleteLineNetwork(startSlot);
-
-        // 2. 연결된 브릭 중 실제로 파괴 가능한 브릭만 남긴다.
         HashSet<BoardSlot> destroyableSlots = ResolveDestroyableSlots(connectedSlots);
-
-        // 시작 브릭이 파괴되지 않는다면 아무것도 터뜨리지 않는다.
         if (!destroyableSlots.Contains(startSlot)) return false;
 
-        // 3. 실제 파괴 순서를 계산한다.
         BuildDestructionOrder(startSlot, destroyableSlots);
-
         if (_destructionOrder.Count == 0) return false;
 
         List<List<BoardSlot>> destructionOrder = _destructionOrder;
         _destructionOrder = new List<List<BoardSlot>>();
 
         int targetCount = CountDestroyTargets(destructionOrder);
-
         if (targetCount == 0) return false;
 
         LineDestroyed?.Invoke(targetCount);
@@ -154,13 +145,11 @@ public class Board : MonoBehaviour
     private HashSet<BoardSlot> ResolveDestroyableSlots(HashSet<BoardSlot> connectedSlots)
     {
         HashSet<BoardSlot> destroyableSlots = new HashSet<BoardSlot>(connectedSlots);
-
         bool changed;
 
         do
         {
             changed = false;
-
             List<BoardSlot> invalidSlots = new List<BoardSlot>();
 
             foreach (BoardSlot slot in destroyableSlots)
@@ -237,8 +226,6 @@ public class Board : MonoBehaviour
 
                 if (!AreAllSlotsDestroyable(lineOrder, destroyableSlots)) continue;
 
-                // 현재 브릭은 이미 현재 레벨에 있으므로
-                // 다음 레벨부터 추가한다.
                 for (int level = 1; level < lineOrder.Count; level++)
                 {
                     int targetLevel = currentLevel + level;
@@ -268,7 +255,6 @@ public class Board : MonoBehaviour
     private void CreateDestructionOrder(Dictionary<BoardSlot, int> levels)
     {
         _destructionOrder.Clear();
-
         int maxLevel = 0;
 
         foreach (int level in levels.Values)
@@ -301,12 +287,9 @@ public class Board : MonoBehaviour
 
         bool plusWall = CollectDirection(startSlot, type, rowOffset, columnOffset, plusSlots );
         bool minusWall = CollectDirection(startSlot, type, -rowOffset, -columnOffset, minusSlots);
-
-        // 양쪽 모두 보드 끝까지 도달해야 완성된 줄이다.
         if (!plusWall || !minusWall) return false;
 
         int maxCount = Mathf.Max(plusSlots.Count, minusSlots.Count );
-
         for (int i = 0; i < maxCount; i++)
         {
             List<BoardSlot> level = new List<BoardSlot>();
@@ -331,11 +314,9 @@ public class Board : MonoBehaviour
         {
             int targetRow = row + rowOffset * distance;
             int targetColumn = column + columnOffset * distance;
-
             if (IsOutsideBoard(targetRow, targetColumn)) return true;
 
             BoardSlot slot = _slots[targetRow, targetColumn];
-
             if (!IsLineSlot(slot, type)) return false;
 
             slots.Add(slot);
@@ -348,7 +329,6 @@ public class Board : MonoBehaviour
         if (slot == null || !slot.IsPlaced) return false;
 
         BrickController brick = slot.PlacedBrick;
-
         if (!IsPlacedBrick(brick)) return false;
 
         return HasBrickType(brick, type);
@@ -422,7 +402,6 @@ public class Board : MonoBehaviour
             foreach (BoardSlot slot in level)
             {
                 BrickController brick = slot.PlacedBrick;
-
                 if (brick == null) continue;
 
                 brick.BeforeDestroy();
@@ -436,7 +415,6 @@ public class Board : MonoBehaviour
             foreach (BoardSlot slot in level)
             {
                 BrickController brick = slot.PlacedBrick;
-
                 if (brick == null) continue;
 
                 brick.Destroy();
@@ -448,11 +426,7 @@ public class Board : MonoBehaviour
             yield return new WaitForSeconds(_destroyInterval);
         }
 
-        // 저장 요청
         BoardManager.Instance.RequestSave();
-
-        // 점수는 이미 LineDestroyed에서 증가했으므로
-        // 여기서는 숫자 연출만 실행한다.
         ScoreManager.Instance.ShowScore();
     }
 
