@@ -34,4 +34,10 @@ public class MainMenuController : MonoBehaviour
         }
     }
 
+    public void OnClickHowToPlayButton()
+    {
+        SoundManager.Instance.PlayButtonClick();
+        GameManager.Instance.HowToPlay();
+    }
+
 }

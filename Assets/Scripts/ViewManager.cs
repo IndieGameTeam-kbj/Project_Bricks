@@ -10,6 +10,7 @@ public class ViewManager : MonoBehaviour
     [SerializeField] private MainMenuController _mainMenuController;
     [SerializeField] private GameObject _game;
     [SerializeField] private GameObject _dimBackGround;
+    [SerializeField] private HowToPlayPopup _howToPlayPopup;
     [SerializeField] private PausePopup _pausePopup;
     [SerializeField] private GameOverPopup _gameOverPopup;
     [SerializeField] private Image _screenTransition;
@@ -36,6 +37,7 @@ public class ViewManager : MonoBehaviour
         SetMainMenuActive(false);
         _game.SetActive(false);
         _dimBackGround.SetActive(false);
+        _howToPlayPopup.gameObject.SetActive(false);
         _pausePopup.gameObject.SetActive(false);
         _gameOverPopup.gameObject.SetActive(false);
 
@@ -48,6 +50,7 @@ public class ViewManager : MonoBehaviour
         _opening.gameObject.SetActive(false);
         _game.SetActive(false);
         _dimBackGround.SetActive(false);
+        _howToPlayPopup.gameObject.SetActive(false);
         _pausePopup.gameObject.SetActive(false);
         _gameOverPopup.gameObject.SetActive(false);
 
@@ -60,10 +63,22 @@ public class ViewManager : MonoBehaviour
         _opening.gameObject.SetActive(false);
         SetMainMenuActive(false);
         _dimBackGround.SetActive(false);
+        _howToPlayPopup.gameObject.SetActive(false);
         _pausePopup.gameObject.SetActive(false);
         _gameOverPopup.gameObject.SetActive(false);
 
         _game.SetActive(true);
+    }
+
+    public void ShowHowToPlay()
+    {
+        _dimBackGround.SetActive(true);
+        _howToPlayPopup.gameObject.SetActive(true);
+
+        PlayPopupOpenAnimation(_howToPlayPopup.GetComponent<RectTransform>(), () =>
+        {
+
+        });
     }
 
     public void ShowPause()

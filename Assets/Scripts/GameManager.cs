@@ -4,6 +4,7 @@ public enum GameState
 {
     Opening,
     MainMenu,
+    HowToPlay,
     Playing,
     Pause,
     GameOver,
@@ -120,7 +121,7 @@ public class GameManager : MonoBehaviour
     {
         if (_isTransitioning) return;
 
-        if (_state == GameState.Opening)
+        if (_state == GameState.Opening || _state == GameState.HowToPlay)
         {
             ChangeState(GameState.MainMenu);
             return;
@@ -138,6 +139,11 @@ public class GameManager : MonoBehaviour
                 _isTransitioning = false;
             }
         );
+    }
+
+    public void HowToPlay()
+    {
+        ChangeState(GameState.HowToPlay);
     }
 
     public void Restart()
@@ -172,6 +178,10 @@ public class GameManager : MonoBehaviour
                 ViewManager.Instance.ShowMainMenu();
                 break;
 
+            case GameState.HowToPlay:
+                ViewManager.Instance.ShowHowToPlay();
+                break;
+
             case GameState.Playing:
                 Time.timeScale = 1.0f;
                 ViewManager.Instance.ShowGame();
@@ -198,6 +208,10 @@ public class GameManager : MonoBehaviour
             {
                 case GameState.MainMenu:
                     Application.Quit();
+                    break;
+
+                case GameState.HowToPlay:
+                    Home();
                     break;
 
                 case GameState.Playing:
